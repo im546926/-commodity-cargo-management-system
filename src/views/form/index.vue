@@ -1,49 +1,45 @@
 <template>
   <div class="app-container">
     <el-form ref="form" :model="form" label-width="120px">
-      <el-form-item label="Activity name">
-        <el-input v-model="form.name" />
+      <el-form-item label="Product name">
+        <el-input v-model="form.product_name"/>
       </el-form-item>
-      <el-form-item label="Activity zone">
-        <el-select v-model="form.region" placeholder="please select your zone">
-          <el-option label="Zone one" value="shanghai" />
-          <el-option label="Zone two" value="beijing" />
-        </el-select>
+      <el-form-item label="Stock">
+        <el-input v-model="form.stock" style="width: 20%"/>
       </el-form-item>
-      <el-form-item label="Activity time">
+      <el-form-item label="Price">
+        <el-input v-model="form.product_price" style="width: 20%"/>
+      </el-form-item>
+      <el-form-item label="Shelf life">
         <el-col :span="11">
-          <el-date-picker v-model="form.date1" type="date" placeholder="Pick a date" style="width: 100%;" />
+          <el-date-picker v-model="form.date" type="date" placeholder="Pick a date" style="width: 100%;"/>
         </el-col>
         <el-col :span="2" class="line">-</el-col>
         <el-col :span="11">
-          <el-time-picker v-model="form.date2" type="fixed-time" placeholder="Pick a time" style="width: 100%;" />
+          <el-time-picker
+            v-model="form.time"
+            type="fixed-time"
+            format="HH:mm"
+            placeholder="Pick a time"
+            style="width: 100%;"
+          />
         </el-col>
       </el-form-item>
-      <el-form-item label="Instant delivery">
-        <el-switch v-model="form.delivery" />
-      </el-form-item>
-      <el-form-item label="Activity type">
-        <el-checkbox-group v-model="form.type">
-          <el-checkbox label="Online activities" name="type" />
-          <el-checkbox label="Promotion activities" name="type" />
-          <el-checkbox label="Offline activities" name="type" />
-          <el-checkbox label="Simple brand exposure" name="type" />
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="Resources">
-        <el-radio-group v-model="form.resource">
-          <el-radio label="Sponsor" />
-          <el-radio label="Venue" />
+      <el-form-item label="Product type">
+        <el-radio-group v-model="form.product_type">
+          <el-radio label="vehicle" name="type"/>
+          <el-radio label="food" name="type"/>
+          <el-radio label="digital" name="type"/>
+          <el-radio label="fruit" name="type"/>
+          <el-radio label="makeup" name="type"/>
         </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Activity form">
-        <el-input v-model="form.desc" type="textarea" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit">Create</el-button>
         <el-button @click="onCancel">Cancel</el-button>
       </el-form-item>
     </el-form>
+
   </div>
 </template>
 
@@ -52,22 +48,51 @@ export default {
   data() {
     return {
       form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      }
+        product_name: '',
+        stock: '',
+        product_type: '',
+        date: '',
+        time: '',
+        type: ''
+      },
+      arr: []
+    }
+  },
+  computed: {
+    dateString() {
+      return new Date(this.form.date)?.toLocaleDateString()
+    },
+    timeString() {
+      return new Date(this.form.time)?.toLocaleTimeString()
     }
   },
   methods: {
     onSubmit() {
+      this.form.date = this.dateString === 'Invalid Date' ? '' : this.dateString
+      this.form.time = this.timeString === 'Invalid Date' ? '' : this.timeString
+      this.form.shelf_time = this.form.date + ' ' + this.form.time
+
+      this.$store.dispatch('table/addInfo', this.form)
+
+      this.$axios({
+        url: '/writeFile',
+        method: 'get',
+        params: {
+          form: this.$store.state.table.tableList
+        }
+      }).then((res) => {
+        console.log(res)
+      })
       this.$message('submit!')
     },
     onCancel() {
+      // this.$axios({
+      //   url: '/getList',
+      //   method: 'get'
+      // }).then((res) => {
+      //   console.log(res)
+      //   // this.arr = [...res]
+      // })
       this.$message({
         message: 'cancel!',
         type: 'warning'
@@ -78,7 +103,7 @@ export default {
 </script>
 
 <style scoped>
-.line{
+.line {
   text-align: center;
 }
 </style>
